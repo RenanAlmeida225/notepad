@@ -22,16 +22,41 @@ const createWindow = () => {
 						win.webContents.send('save', 'send');
 					},
 					accelerator: 'ctrl+shift+s'
+				},
+				{ type: 'separator' },
+				{
+					label: 'Open File...',
+					click: async () => {
+						const content = await openFile();
+						win.webContents.send('open-file', content);
+					},
+					accelerator: 'ctrl+o'
 				}
 			]
 		},
 		{
 			label: 'Edit',
 			submenu: [
-				{
-					label: 'Dev tools',
-					click: () => win.webContents.openDevTools()
-				}
+				{ role: 'undo' },
+				{ role: 'redo' },
+				{ type: 'separator' },
+				{ role: 'cut' },
+				{ role: 'copy' },
+				{ role: 'paste' }
+			]
+		},
+		{
+			label: 'View',
+			submenu: [
+				{ role: 'reload' },
+				{ role: 'forceReload' },
+				{ role: 'toggleDevTools' },
+				{ type: 'separator' },
+				{ role: 'resetZoom' },
+				{ role: 'zoomIn' },
+				{ role: 'zoomOut' },
+				{ type: 'separator' },
+				{ role: 'togglefullscreen' }
 			]
 		}
 	]);
@@ -73,5 +98,18 @@ async function save(content) {
 			if (err) throw err;
 			console.log('Saved!');
 		});
+	}
+}
+
+async function openFile() {
+	try {
+		const { canceled, filePaths } = await dialog.showOpenDialog();
+		if (canceled) {
+			return;
+		}
+		const data = fs.readFileSync(filePaths[0], 'utf8');
+		return data;
+	} catch (err) {
+		console.error(err);
 	}
 }
